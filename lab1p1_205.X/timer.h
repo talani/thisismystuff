@@ -1,0 +1,18 @@
+/* 
+ * File:   timer.h
+ * Author: 
+ *
+ * Created on December 30, 2014, 8:07 PM
+ */
+
+
+#ifndef INITTIMER_H
+#define	INITTIMER_H
+
+#include <xc.h>
+#include <sys/attribs.h>
+
+void delayUs(unsigned int delay);
+void initTimer2();
+#endif	/* INITTIMER_H */
+
