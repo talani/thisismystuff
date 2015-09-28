@@ -25,22 +25,22 @@ int main() {
     TRISDbits.TRISD1 = 0; //led2
     TRISDbits.TRISD2 = 0; //led3
     
-    LATDbits.LATD0 = 0; //off
-    LATDbits.LATD1 = 0; //off
-    LATDbits.LATD2 = 0; //off
+    LATGbits.LATD0 = 0; //off
+    LATGbits.LATD1 = 0; //off
+    LATGbits.LATD2 = 0; //off
     
     while(1){
         if(PORTDbits.RD6 == 0) //pressed
         {
-            LATDbits.LATD0 = 1; //off
-            LATDbits.LATD1 = 0; //off
-            LATDbits.LATD2 = 0; //off
+            LATGbits.LATD0 = 1; //off
+            LATGbits.LATD1 = 0; //off
+            LATGbits.LATD2 = 0; //off
         }
         if(PORTDbits.RD6 == 1)
         {
-            LATDbits.LATD0 = 0; //off
-            LATDbits.LATD1 = 0; //off
-            LATDbits.LATD2 = 1; //off
+            LATGbits.LATD0 = 0; //off
+            LATGbits.LATD1 = 0; //off
+            LATGbits.LATD2 = 1; //off
         }
         //TODO: Implement a state machine to create the desired functionality
         
