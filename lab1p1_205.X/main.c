@@ -58,8 +58,7 @@ int main(void)
     initTimer2();
     updateLEDState();
     enableInterrupts();
-    int x;
-   
+  
     
     while(1)
     {
