@@ -5,8 +5,8 @@
  * Created on December 30, 2014, 8:07 PM
  */
 
+#include <xc.h>
 #include "timer.h"
-
 #define us 14 //microsecond
 //Uses timer 2
 void delayUs(unsigned int delay){
