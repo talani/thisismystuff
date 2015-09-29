@@ -24,10 +24,10 @@ void delayUs(unsigned int delay){
     
 }
 
-void initTimer2()
-{
-    TMR2=0; //resets timer
-    T2CONbits.TCKPS=6; //set pre-scaler to 64 
-    T2CONbits.TCS = 0; //configures oscillator
-    IFS0bits.T2IF = 0; //interrupt flag
-}
+//void initTimer2()
+//{
+//    TMR2=0; //resets timer
+//    T2CONbits.TCKPS=6; //set pre-scaler to 64 
+//    T2CONbits.TCS = 0; //configures oscillator
+//    IFS0bits.T2IF = 0; //interrupt flag
+//}

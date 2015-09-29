@@ -11,16 +11,25 @@
 #include "lcd.h"
 #include "timer.h"
 
-//#define LCD_DATA  TRISD
-#define LCD_D7 PORTDbits.RD12
-#define LCD_D6 PORTDbits.RD6
-#define LCD_D5 PORTDbits.RD3
-#define LCD_D4 PORTDbits.RD1
+////#define LCD_DATA  TRISD
+//#define LCD_D7 PORTDbits.RD12
+//#define LCD_D6 PORTDbits.RD6
+//#define LCD_D5 PORTDbits.RD3
+//#define LCD_D4 PORTDbits.RD1
+
+#define LCD_D7 LATDbits.LATD12
+#define LCD_D6 LATDbits.LATD6
+#define LCD_D5 LATDbits.LATD3
+#define LCD_D4 LATDbits.LATD1
 
 
-//#define LCD_RS  PORTGbits.RG13
-#define LCD_RS PORTFbits.RF1
-#define LCD_E   PORTDbits.RD9
+
+//#define LCD_RS PORTFbits.RF1
+//#define LCD_E PORTDbits.RD9
+#define LCD_RS LATFbits.LATF1
+#define LCD_E LATDbits.LATD9
+#define LCD_RW LATGbits.LATG0
+
 
 #define TRIS_D7 TRISDbits.TRISD12
 #define TRIS_D6 TRISDbits.TRISD6
@@ -29,6 +38,7 @@
 
 #define TRIS_RS TRISFbits.TRISF1
 #define TRIS_E  TRISDbits.TRISD9
+#define TRIS_RW TRISGbits.TRISG0
 
 #define OUTPUT 0
 #define INPUT 1
@@ -42,7 +52,7 @@
  */
 void writeFourBits(unsigned char word, unsigned int commandType, unsigned int delayAfter, unsigned int lower){
     //TODO:
-    if(lower==0)
+    if(lower==0) //upper
     {
         word = word>>4;
     }
@@ -50,8 +60,10 @@ void writeFourBits(unsigned char word, unsigned int commandType, unsigned int de
     if(commandType==1)//we are writing
     {
         LCD_RS=1;
+        delayUs(1);
     }
     else LCD_RS=0;
+    delayUs(1);
     LCD_D4 = word & 0x01; //and word with 1 to get LSB
     LCD_D5 = (word>>1) & 0x01;
     LCD_D6 = (word>>2) & 0x01;
@@ -59,10 +71,11 @@ void writeFourBits(unsigned char word, unsigned int commandType, unsigned int de
     
     
     LCD_E = 1; //set enable pin high
-    
-   // delayUs(1);
-    delayUs(delayAfter);
+    delayUs(1);
     LCD_E = 0; //set enable pin low
+    delayUs(1);
+    delayUs(delayAfter);
+
 }
 
 /* Using writeFourBits, this function should write the two bytes of a character
@@ -70,8 +83,8 @@ void writeFourBits(unsigned char word, unsigned int commandType, unsigned int de
  */
 void writeLCD(unsigned char word, unsigned int commandType, unsigned int delayAfter){
     //TODO:
-    writeFourBits(word, commandType, delayAfter, 0);
-    writeFourBits(word, commandType, delayAfter, 1);
+    writeFourBits(word, commandType, delayAfter, 0); //upper
+    writeFourBits(word, commandType, delayAfter, 1); //lower
 }
 
 /* Given a character, write it to the LCD. RS should be set to the appropriate value.
@@ -90,27 +103,50 @@ void initLCD(void) {
     TRIS_D6 = OUTPUT;
     TRIS_D5 = OUTPUT;
     TRIS_D4 = OUTPUT;
+    TRIS_RW = OUTPUT;
+    LCD_RW=0; //Can ground this since we are not reading, or we can make it  in software
 
     // Initilization sequence utilizes specific LCD commands before the general configuration
     // commands can be utilized. The first few initilition commands cannot be done using the
     // WriteLCD function. Additionally, the specific sequence and timing is very important.
 
+    
+    //turn LCD off
+    //writeFourBits(0,046,)
+    
     // Enable 4-bit interface
-    delayUs(15000); //delay 15ms
+    delayUs(1000); //delay 15ms after VDD reaches 4.5V
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
+    delayUs(1000);
     
-    writeFourBits(3, 0, 40, 1);
-    delayUs(4100);
-    writeFourBits(3, 0, 40, 1);
-    delayUs(100);
-    writeFourBits(3, 0, 40, 1);
-    writeFourBits(2, 0, 40, 1);
+    //writeFourBits( word, unsigned commandType, delayAfter, lower)
+    writeFourBits(0x03, 0, 46, 1); //000011
+    delayUs(4100); //wait 4.1ms
+    writeFourBits(0x03, 0, 46, 1); //000011
+    delayUs(100); //wait 100us
+    writeFourBits(0x03, 0, 46, 1); //000011
+    writeFourBits(0x02, 0, 46, 1); //000010
     
-    //or try 0c2C
-    writeLCD(0x28, 0, 40);
-    writeLCD(0x08, 0, 40);
+    //if 0x28 doesn't work, try 0x2C
+    writeLCD(0x2B, 0, 46);
+    writeLCD(0x08, 0, 46);
+    
     clearLCD();
    // writeLCD(0x01, 0, clearLCD());
-    writeLCD(0x06, 0, 40);
+    writeLCD(0x06, 0, 46);
+    writeLCD(0x0C, 0, 46);
     
 
     // Function Set (specifies data width, lines, and font.

@@ -19,9 +19,9 @@
 
 int main(void)
 {
-    SYSTEMConfigPerformance(40000000);
+    //SYSTEMConfigPerformance(40000000);
     
-    initTimer2();
+   // initTimer2();
     //initLCD();
     //testLCD();
     enableInterrupts();
