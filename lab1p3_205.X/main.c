@@ -33,6 +33,7 @@ typedef enum {Idle, risingEdge, fallingEdge} buttonPress;
 volatile buttonPress buttonState=Idle;
 volatile stateType currentState=wait;
 volatile LEDState currentLED=WAIT;
+volatile int count=0;
 
 updateLEDState()
 {   
@@ -42,6 +43,10 @@ updateLEDState()
                 turnOnLED(1);
                 moveCursorLCD(0, 0); //line 1
                 printStringLCD("RUNNING "); //LCD displays running
+                count++;
+                moveCursorLCD(0,2);
+                //printStringLCD("what");
+                printStringLCD(getTimeString(count));
                 //currentLED=STOP;
             break;
             case STOP: //turn off led1, turn on led2
@@ -63,7 +68,7 @@ int main(void)
 
     initLEDs();
     initSW2();
-    //initTimer2();
+    //initTimer1();
     updateLEDState();
     enableInterrupts();
     
@@ -77,11 +82,14 @@ int main(void)
                 if(buttonState==risingEdge)//button is pressed
                 {
                     currentState=debouncePress;
+                    //T1CONbits.ON=0;
+                    //TMR1=0;
                     buttonState=Idle;
                 }
                 break;
             case debouncePress:
                 delayUs(50);
+                T1CONbits.ON=1;
                 currentState=waitForRelease;
                 break;
             case waitForRelease:

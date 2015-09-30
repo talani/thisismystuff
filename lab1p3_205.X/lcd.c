@@ -217,3 +217,71 @@ void testLCD(){
     printStringLCD("Hello!");
     for(i = 0; i < 1000; i++) delayUs(1000);
 }
+char getChar(int value)
+{
+    return '0' + value;
+}
+
+char* getTimeString(int time)
+{
+    int mill;
+    int sec;
+    int min;
+    int timeTemp = time;
+
+    char str[9];
+    char M1;
+    char M2;
+    char S1;
+    char S2;
+    char F1;
+    char F2;
+
+    mill = timeTemp%100;
+    timeTemp = time/100;
+    sec = timeTemp%60;
+    min = timeTemp/60;
+
+    M1 = getChar(min/10);
+    moveCursorLCD(0, 2);
+    printCharLCD(M1);
+
+    M2 = getChar(min%10);
+    moveCursorLCD(1, 2);
+    printCharLCD(M2);
+
+    moveCursorLCD(2, 2);
+    printCharLCD(':');
+
+    S1 = getChar(sec/10);
+    moveCursorLCD(3, 2);
+    printCharLCD(S1);
+
+    S2 = getChar(sec%10);
+    moveCursorLCD(4, 2);
+    printCharLCD(S2);
+
+    moveCursorLCD(5, 2);
+    printCharLCD(':');
+
+    F1 = getChar(mill/10);
+    moveCursorLCD(6, 2);
+    printCharLCD(F1);
+
+    F2 = getChar(mill%10);
+    moveCursorLCD(7, 2);
+    printCharLCD(F2);
+
+    str[0] = (char)M1;
+    str[1] = (char)M2;
+    str[2] = ':';
+    str[3] = (char)S1;
+    str[4] = (char)S2;
+    str[5] = ':';
+    str[6] = (char)F1;
+    str[7] = (char)F2;
+    str[8] = '\0';
+
+
+    return str;
+}

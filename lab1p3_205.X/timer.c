@@ -24,6 +24,28 @@ void delayUs(unsigned int delay){
     
 }
 
+void initTimer1()
+{
+    TMR1 = 0; //clear TMR1
+    T1CONbits.ON = 0; //turn timer off
+    T1CONbits.SIDL = 0; //continue operation even in idle mode
+    T1CONbits.TWDIS = 0; //back to back writes are enabled
+    T1CONbits.TWIP = 0; //asynchronous write to TMR1 register complete
+    T1CONbits.TGATE = 0;
+    T1CONbits.TCS = 0; //setting oscillator
+    IEC0bits.T1IE = 1; //enable the interrupt
+    IFS0bits.T1IF = 0;// Put the flag down
+    IPC1bits.T1IP = 3;// Configure the Interrupt Priority
+    
+    PR1 = 625; //initializes Timer1 to have a period = 1s. 
+    
+    //sets pre-scaler to 64
+    T1CONbits.TCKPS1 = 0;
+    T1CONbits.TCKPS0 = 0;
+    
+    T1CONbits.ON = 1; //turn timer on
+}
+
 //void initTimer2()
 //{
 //    TMR2=0; //resets timer
