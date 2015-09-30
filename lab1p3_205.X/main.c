@@ -24,7 +24,7 @@ typedef enum stateTypeEnum
 
 typedef enum LEDStateEnum
 {
-    RUN, STOP
+    RUN, STOP, WAIT
 }LEDState;
 
 //idle=nothing, risingEdge=button pressed, fallingEdge=button released
@@ -32,7 +32,7 @@ typedef enum {Idle, risingEdge, fallingEdge} buttonPress;
 
 volatile buttonPress buttonState=Idle;
 volatile stateType currentState=wait;
-volatile LEDState currentLED=RUN;
+volatile LEDState currentLED=WAIT;
 
 updateLEDState()
 {   
@@ -40,12 +40,19 @@ updateLEDState()
     {
             case RUN: //turn on led1, turn off led2
                 turnOnLED(1);
-                currentLED=STOP;
+                moveCursorLCD(0, 0); //line 1
+                printStringLCD("RUNNING "); //LCD displays running
+                //currentLED=STOP;
             break;
             case STOP: //turn off led1, turn on led2
+                moveCursorLCD(0, 0); //line 1
+                printStringLCD("STOPPED "); //LCD displays stopped
                 turnOnLED(2);
-                currentLED=RUN;
+                //currentLED=RUN;
             break;
+            case WAIT:
+                initLCD();
+                break;
     }
 }
 
@@ -59,6 +66,7 @@ int main(void)
     //initTimer2();
     updateLEDState();
     enableInterrupts();
+    
   
     
     while(1)
@@ -85,6 +93,18 @@ int main(void)
                 break;
             case debounceRelease:
                 delayUs(50);
+                if(currentLED==WAIT)
+                {
+                    currentLED=RUN;
+                }
+                else if(currentLED==RUN)
+                {
+                    currentLED=STOP;
+                }
+                else if(currentLED==STOP)
+                {
+                    currentLED=RUN;
+                }
                 updateLEDState();
                 currentState=wait;
                 break;
