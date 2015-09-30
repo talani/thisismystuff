@@ -7,6 +7,9 @@
 
 #include <xc.h>
 #include "timer.h"
+#include <stdio.h>
+#include <stdlib.h>
+
 #define us 14 //microsecond
 //Uses timer 2
 void delayUs(unsigned int delay){
@@ -37,9 +40,9 @@ void initTimer1()
     IFS0bits.T1IF = 0;// Put the flag down
     IPC1bits.T1IP = 3;// Configure the Interrupt Priority
     
-    PR1 = 625; //initializes Timer1 to have a period = 1s. 
+    PR1 = 6249; //less than 2^16.
     
-    //sets pre-scaler to 64
+    //sets pre-scaler to 0
     T1CONbits.TCKPS1 = 0;
     T1CONbits.TCKPS0 = 0;
     

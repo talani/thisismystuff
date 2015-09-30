@@ -135,3 +135,12 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL2SRS) _CNInterrupt(void)
     }
     IFS1bits.CNAIF = 0;
 }
+
+void __ISR(_TIMER_1_VECTOR, ipl3SRS) Timer1Handler()
+{ 
+    IFS0bits.T1IF = 0; //put flag down
+    if(currentLED==RUN)
+    {
+        count++;
+    }
+}
