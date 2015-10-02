@@ -8,6 +8,7 @@
 // ******************************************************************************************* //
 
 #include "leds.h"
+#include "lcd.h"
 #include "interrupt.h"
 #include "switch.h"
 #include "timer.h"
@@ -24,7 +25,7 @@ typedef enum stateTypeEnum
 
 typedef enum LEDStateEnum
 {
-    RUN, STOP, WAIT
+    RUN, STOP, WAIT2
 }LEDState;
 
 //idle=nothing, risingEdge=button pressed, fallingEdge=button released
@@ -32,48 +33,40 @@ typedef enum {Idle, risingEdge, fallingEdge} buttonPress;
 
 volatile buttonPress buttonState=Idle;
 volatile stateType currentState=wait;
-volatile LEDState currentLED=WAIT;
+volatile LEDState currentLED=WAIT2;
 volatile int count=0;
 
-updateLEDState()
-{   
-    switch (currentLED)
-    {
-            case RUN: //turn on led1, turn off led2
-                turnOnLED(1);
-                moveCursorLCD(0, 0); //line 1
-                printStringLCD("RUNNING "); //LCD displays running
-                count++;
-                moveCursorLCD(0,2);
-                //printStringLCD("what");
-                printStringLCD(getTimeString(count));
-                //currentLED=STOP;
-            break;
-            case STOP: //turn off led1, turn on led2
-                moveCursorLCD(0, 0); //line 1
-                printStringLCD("STOPPED "); //LCD displays stopped
-                turnOnLED(2);
-                //currentLED=RUN;
-            break;
-            case WAIT:
-                initLCD();
-                break;
-    }
-}
+//updateLEDState()
+//{   
+//    switch (currentLED)
+//    {
+//            case RUN: //turn on led1, turn off led2
+//                turnOnLED(1);
+//                //currentLED=STOP;
+//            break;
+//            case STOP: //turn off led1, turn on led2
+//                turnOnLED(2);
+//                //currentLED=RUN;
+//            break;
+//    }
+//}
 
 
 int main(void)
 {
-    //SYSTEMConfigPerformance(40000000);
+    SYSTEMConfigPerformance(40000000);
 
     initLEDs();
     initSW2();
-    //initTimer1();
-    updateLEDState();
+    initTimer1();
+    //updateLEDState();
+    initLCD();
+    //clearLCD();
     enableInterrupts();
-    
   
-    
+//    turnOnLED(1);
+//    moveCursorLCD(0, 0); //line 1
+//    printStringLCD("RUNNING "); //LCD displays running
     while(1)
     {
         switch (currentState)
@@ -82,14 +75,12 @@ int main(void)
                 if(buttonState==risingEdge)//button is pressed
                 {
                     currentState=debouncePress;
-                    //T1CONbits.ON=0;
-                    //TMR1=0;
                     buttonState=Idle;
+                    //T1CONbits.ON=1;
                 }
                 break;
             case debouncePress:
                 delayUs(50);
-                T1CONbits.ON=1;
                 currentState=waitForRelease;
                 break;
             case waitForRelease:
@@ -101,19 +92,34 @@ int main(void)
                 break;
             case debounceRelease:
                 delayUs(50);
-                if(currentLED==WAIT)
+                //updateLEDState();
+                if(currentLED == WAIT2)
                 {
+                    turnOnLED(1);
+                    //delayUs(1);
+                    moveCursorLCD(0, 0); //line 1
+                    printStringLCD("RUNNING "); //LCD displays running
+                    T1CONbits.ON=1;
                     currentLED=RUN;
                 }
-                else if(currentLED==RUN)
+                else if(currentLED == RUN)
                 {
+                    turnOnLED(2);
+                    //delayUs(1);
+                    moveCursorLCD(0, 0); //line 1
+                    printStringLCD("STOPPED "); //LCD displays running
                     currentLED=STOP;
+                    T1CONbits.ON=0;
                 }
-                else if(currentLED==STOP)
+                else if(currentLED == STOP)
                 {
+                    turnOnLED(1);
+                    //delayUs(1);
+                    moveCursorLCD(0, 0); //line 1
+                    printStringLCD("RUNNING "); //LCD displays running
                     currentLED=RUN;
+                    T1CONbits.ON=1;
                 }
-                updateLEDState();
                 currentState=wait;
                 break;
         } 
@@ -137,10 +143,197 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL2SRS) _CNInterrupt(void)
 }
 
 void __ISR(_TIMER_1_VECTOR, ipl3SRS) Timer1Handler()
-{ 
-    IFS0bits.T1IF = 0; //put flag down
+{  
+    //delayUs(1);
+    moveCursorLCD(0,2);
+    printStringLCD(getTimeString(count));
     if(currentLED==RUN)
     {
         count++;
+         LATDbits.LATD0=1;
+         
+//         moveCursorLCD(0, 0); //line 1
+//         printStringLCD("RUNNING "); //LCD displays running
+//        moveCursorLCD(0,2);
+//        printStringLCD(getTimeString(count));
     }
+//    if(currentLED==STOP)
+//    {
+//        
+//        moveCursorLCD(0, 0); //line 1
+//                printStringLCD("STOPPED "); //LCD displays running
+//    }
+    IFS0bits.T1IF = 0; //put flag down
 }
+
+
+
+
+//// ******************************************************************************************* //
+////
+//// File:         lab1p1.c
+//// Date:         
+//// Authors:      
+////
+//// Description: Part 1 for lab 1
+//// ******************************************************************************************* //
+//
+//#include "leds.h"
+//#include "interrupt.h"
+//#include "switch.h"
+//#include "timer.h"
+//#include "config.h"
+//
+///* Please note that the configuration file has changed from lab 0.
+// * the oscillator is now of a different frequency.
+// */
+//
+//typedef enum stateTypeEnum
+//{
+//    wait, debouncePress, waitForRelease, debounceRelease
+//}stateType;
+//
+//typedef enum LEDStateEnum
+//{
+//    RUN, STOP, WAIT
+//}LEDState;
+//
+////idle=nothing, risingEdge=button pressed, fallingEdge=button released
+//typedef enum {Idle, risingEdge, fallingEdge} buttonPress;
+//
+//volatile buttonPress buttonState=Idle;
+//volatile stateType currentState=wait;
+//volatile LEDState currentLED=WAIT;
+//volatile int count;
+//
+//updateLEDState()
+//{   
+//    switch (currentLED)
+//    {
+//            case RUN: //turn on led1, turn off led2
+//                turnOnLED(1);
+//                moveCursorLCD(0, 0); //line 1
+//                printStringLCD("RUNNING "); //LCD displays running
+//                //count++;
+//                //moveCursorLCD(0,2);
+//                //printStringLCD("what");
+//                //printStringLCD(getTimeString(count));
+//                //currentLED=STOP;
+//            break;
+//            case STOP: //turn off led1, turn on led2
+//                moveCursorLCD(0, 0); //line 1
+//                printStringLCD("STOPPED "); //LCD displays stopped
+//                turnOnLED(2);
+//                //currentLED=RUN;
+//            break;
+//            case WAIT:
+//                initLCD();
+//                break;
+//    }
+//}
+//
+//
+//int main(void)
+//{
+//    SYSTEMConfigPerformance(40000000);
+//
+//    initLEDs();
+//    initSW2();
+//    
+//    updateLEDState();
+//    initTimer1();
+//    enableInterrupts();
+//    char s[9];
+//    count=0;
+//    while(1)
+//    {
+//
+//        switch (currentState)
+//        {
+//            case wait:
+//                if(currentLED==RUN)
+//                {
+//                    moveCursorLCD(0,2);
+//                    printStringLCD(getTimeString(count));
+//                    currentState=wait;
+//                }
+//                if(buttonState==risingEdge)//button is pressed
+//                {
+//                    currentState=debouncePress;
+//                    T1CONbits.ON=0;
+//                   // TMR1=0;
+//                    buttonState=Idle;
+//                }
+//                break;
+//            case debouncePress:
+//                delayUs(50);
+//                //T1CONbits.ON=1;
+//                currentState=waitForRelease;
+//                break;
+//            case waitForRelease:
+//                if(buttonState==fallingEdge)//button released
+//                {
+//                    currentState=debounceRelease;
+//                    buttonState=Idle;
+//                }
+//                break;
+//            case debounceRelease:
+//                delayUs(50);
+//                T1CONbits.ON=1;
+//                if(currentLED==WAIT)
+//                {
+//                    currentLED=RUN;
+//                }
+//                else if(currentLED==RUN)
+//                {
+//                    currentLED=STOP;
+//                }
+//                else if(currentLED==STOP)
+//                {
+//                    currentLED=RUN;
+//                    //T1CONbits.TON=0;
+//                }
+//                updateLEDState();
+//                currentState=wait;
+//                break;
+//        } 
+//    } 
+//    return 0;
+//}
+//
+//void __ISR(_CHANGE_NOTICE_VECTOR, IPL2SRS) _CNInterrupt(void)
+//{   
+//    int dummy = PORTAbits.RA7;
+//    
+//    if(PORTAbits.RA7==0)//pressed
+//    {
+//        buttonState=risingEdge;
+//    }
+//    else if(PORTAbits.RA7==1)//released
+//    {
+//        buttonState=fallingEdge;
+//    }
+//    IFS1bits.CNAIF = 0;
+//}
+//
+//void __ISR(_TIMER_1_VECTOR, ipl3SRS) Timer1Handler()
+//{ 
+//    
+//   
+//    if(currentLED==RUN)
+//    {
+//        count++;
+//         LATDbits.LATD0=1;
+////         moveCursorLCD(0, 0); //line 1
+////         printStringLCD("RUNNING "); //LCD displays running
+////        moveCursorLCD(0,2);
+////        printStringLCD(getTimeString(count));
+//    }
+////    if(currentLED==STOP)
+////    {
+////        
+////        moveCursorLCD(0, 0); //line 1
+////                printStringLCD("STOPPED "); //LCD displays running
+////    }
+//    IFS0bits.T1IF = 0; //put flag down
+//}

@@ -227,8 +227,8 @@ char* getTimeString(int time)
     int mill;
     int sec;
     int min;
-    int timeTemp = time;
-
+    int timeTemp = time*10;
+    
     char str[9];
     char M1;
     char M2;
@@ -237,10 +237,11 @@ char* getTimeString(int time)
     char F1;
     char F2;
 
+    
     mill = timeTemp%100;
-    timeTemp = time/100;
+    timeTemp = timeTemp/100;
     sec = timeTemp%60;
-    min = timeTemp/60;
+    min = (timeTemp-sec)/60;
 
     M1 = getChar(min/10);
     moveCursorLCD(0, 2);

@@ -7,10 +7,11 @@
 
 #include <xc.h>
 #include "timer.h"
-#include <stdio.h>
-#include <stdlib.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 
 #define us 14 //microsecond
+#define fcy 80000000
 //Uses timer 2
 void delayUs(unsigned int delay){
     
@@ -30,23 +31,24 @@ void delayUs(unsigned int delay){
 void initTimer1()
 {
     TMR1 = 0; //clear TMR1
-    T1CONbits.ON = 0; //turn timer off
-    T1CONbits.SIDL = 0; //continue operation even in idle mode
-    T1CONbits.TWDIS = 0; //back to back writes are enabled
-    T1CONbits.TWIP = 0; //asynchronous write to TMR1 register complete
-    T1CONbits.TGATE = 0;
-    T1CONbits.TCS = 0; //setting oscillator
+
     IEC0bits.T1IE = 1; //enable the interrupt
     IFS0bits.T1IF = 0;// Put the flag down
     IPC1bits.T1IP = 3;// Configure the Interrupt Priority
     
-    PR1 = 6249; //less than 2^16.
+    //2^16=65,536
+    //fcy =80MHz
+    //delay=0.01s
+    //8M*0.01=800,000
     
-    //sets pre-scaler to 0
-    T1CONbits.TCKPS1 = 0;
-    T1CONbits.TCKPS0 = 0;
+    PR1 = ((fcy*0.01)/256)-1;
+    //PR1 = 3124; //initializes Timer1 to have a period = 1s. 
+    T1CONbits.TCKPS=0b11;
+    //sets pre-scaler to 256
+    //T1CONbits.TCKPS1 = 1;
+    //T1CONbits.TCKPS0 = 1;
     
-    T1CONbits.ON = 1; //turn timer on
+    //T1CONbits.ON = 0; //turn timer on
 }
 
 //void initTimer2()
@@ -56,4 +58,12 @@ void initTimer1()
 //    T2CONbits.TCS = 0; //configures oscillator
 //    IFS0bits.T2IF = 0; //interrupt flag
 //}
-
+//void getTimedString(int watch, char* str){
+//    int FF = watch % 100; //Get the lower 2 numbers
+//    int SS = (watch / 100) % 60; //MOD 60 to turn 60 seconds in a minute
+//    int MM = ((watch / 100) - SS) / 60; //Convert watch to minute
+//    
+//    
+//    sprintf(str, "%02d:%02d:%02d", MM, SS, FF); //Prints the number to a string
+//
+//}

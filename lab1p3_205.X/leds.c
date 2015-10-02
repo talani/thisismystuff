@@ -17,10 +17,11 @@
 void initLEDs(){
     TRISGbits.TRISG12 = OUTPUT; // set led1 as output RUN  TRD1
     TRISGbits.TRISG14 = OUTPUT; // set led2 as output STOP  TRD2
-    
+    TRISDbits.TRISD0 = OUTPUT;
     //turn off all LEDs
     LATGbits.LATG12 = 1; //LED1 TRD1
     LATGbits.LATG14 = 1;  //LED2 TRD2
+    LATDbits.LATD0 = 0;
 }
 
 void turnOnLED(int led)
