@@ -69,7 +69,6 @@ void writeFourBits(unsigned char word, unsigned int commandType, unsigned int de
     LCD_D6 = (word>>2) & 0x01;
     LCD_D7 = (word>>3) & 0x01;
     
-    
     LCD_E = 1; //set enable pin high
     delayUs(1);
     LCD_E = 0; //set enable pin low
@@ -106,14 +105,6 @@ void initLCD(void) {
     TRIS_RW = OUTPUT;
     LCD_RW=0; //Can ground this since we are not reading, or we can make it  in software
 
-    // Initilization sequence utilizes specific LCD commands before the general configuration
-    // commands can be utilized. The first few initilition commands cannot be done using the
-    // WriteLCD function. Additionally, the specific sequence and timing is very important.
-
-    
-    //turn LCD off
-    //writeFourBits(0,046,)
-    
     // Enable 4-bit interface
     delayUs(1000); //delay 15ms after VDD reaches 4.5V
     delayUs(1000);
@@ -139,28 +130,14 @@ void initLCD(void) {
     writeFourBits(0x03, 0, 46, 1); //000011
     writeFourBits(0x02, 0, 46, 1); //000010
     
-    //if 0x28 doesn't work, try 0x2C
     writeLCD(0x2B, 0, 46);
     writeLCD(0x08, 0, 46);
     
     clearLCD();
-   // writeLCD(0x01, 0, clearLCD());
+
     writeLCD(0x06, 0, 46);
     writeLCD(0x0C, 0, 46);
-    
 
-    // Function Set (specifies data width, lines, and font.
-
-    // 4-bit mode initialization is complete. We can now configure the various LCD
-    // options to control how the LCD will function.
-
-    // TODO: Display On/Off Control
-        // Turn Display (D) Off
-    // TODO: Clear Display (The delay is not specified in the data sheet at this point. You really need to have the clear display delay here.
-    // TODO: Entry Mode Set
-        // Set Increment Display, No Shift (i.e. cursor move)
-    // TODO: Display On/Off Control
-        // Turn Display (D) On, Cursor (C) Off, and Blink(B) Off
 }
 
 /*
@@ -169,7 +146,6 @@ void initLCD(void) {
  * Since a string is just a character array, try to be clever with your use of pointers.
  */
 void printStringLCD(const char* s) {
-    //TODO:
     while(*s != '\0')
     {
         printCharLCD(*(s++));
@@ -178,9 +154,6 @@ void printStringLCD(const char* s) {
     
 }
 
-/*
- * Clear the display.
- */
 void clearLCD(){
     writeLCD(0x01, 0, 1640);
 }
