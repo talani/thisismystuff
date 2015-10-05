@@ -9,6 +9,8 @@
 //0 turns on led
 //1 turns led off
 //because of hardware
+#include <xc.h>
+#include <sys/attribs.h>
 #include "leds.h"
 
 #define OUTPUT 0

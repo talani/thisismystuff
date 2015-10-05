@@ -6,12 +6,13 @@
  */
 
 #include <xc.h>
+#include <sys/attribs.h>
 #include "timer.h"
 //#include <stdio.h>
 //#include <stdlib.h>
 
 #define us 14 //microsecond
-#define fcy 80000000
+#define fcy 8000000
 //Uses timer 2
 void delayUs(unsigned int delay){
     
@@ -33,11 +34,12 @@ void initTimer1()
 
     IEC0bits.T1IE = 1; //enable the interrupt
     IFS0bits.T1IF = 0;// Put the flag down
-    IPC1bits.T1IP = 3;// Configure the Interrupt Priority
+    IPC1bits.T1IP = 7;// Configure the Interrupt Priority
     
     
-    PR1 = ((fcy*0.01)/256)-1;
+    //PR1 = ((fcy*0.01)/256)-1;
+    PR1=3124;
     T1CONbits.TCKPS=0b11;
     
-    //T1CONbits.ON = 1; //turn timer on
+        T1CONbits.ON = 1; //turn timer on
 }

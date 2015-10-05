@@ -8,6 +8,7 @@
 /* TODO: Make define statements for each pin used in the LCD
  */
 #include <xc.h>
+#include <sys/attribs.h>
 #include "lcd.h"
 #include "timer.h"
 
@@ -100,6 +101,8 @@ void initLCD(void) {
     TRIS_E = OUTPUT;
     TRIS_D7 = OUTPUT;
     TRIS_D6 = OUTPUT;
+    //ANSELDbits.ANSD3 = 0;
+    //ANSELDbits.ANSD1 = 0;
     TRIS_D5 = OUTPUT;
     TRIS_D4 = OUTPUT;
     TRIS_RW = OUTPUT;
@@ -200,7 +203,7 @@ char* getTimeString(int time)
     int FF;
     int SS;
     int MM;
-    int timeTemp = time*10;
+    int timeTemp = time;
     
     char str[9];
     char M1;

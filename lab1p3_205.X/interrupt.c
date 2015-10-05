@@ -6,6 +6,7 @@
  */
 
 #include <xc.h>
+#include <sys/attribs.h>
 #include "interrupt.h"
 
 void enableInterrupts(){

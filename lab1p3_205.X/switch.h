@@ -13,6 +13,7 @@
 #include <sys/attribs.h>
 
 void initSW2();
+void initSW3();
 
 
 #endif	/* SWITCH_H */
