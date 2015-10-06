@@ -44,10 +44,10 @@
 //
 void initSW3()
 {
-    TRISDbits.TRISD6 = INPUT;           // Configure switch as input
+    TRISDbits.TRISD13 = INPUT;           // Configure switch as input
     CNCONDbits.ON = 1;                  // Enable overall interrupt
-    CNENDbits.CNIED6 = ENABLED;         // Enable pin CN
-    CNPUDbits.CNPUD6 = ENABLED;         // Enable pull-up resistor
+    CNENDbits.CNIED13 = ENABLED;         // Enable pin CN
+    CNPUDbits.CNPUD13 = ENABLED;         // Enable pull-up resistor
     IFS1bits.CNDIF = 0;                 // Put down the flag
     IPC8bits.CNIP = 7;                  // Configure interrupt priority
     //IPC8bits.CNIS = 4;                  // Configure the interrupt sub-priority

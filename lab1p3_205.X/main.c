@@ -7,14 +7,14 @@
 #include "timer.h"
 #include "config.h"
 
-#define RESET PORTDbits.RD6
+#define RESET PORTDbits.RD13
 #define BUTTON PORTDbits.RD7
 #define PRESSED 0
 #define RELEASED 1
 
 typedef enum stateTypeEnum
 {
-    waitForPress, debouncePress, waitForRelease, debounceRelease
+    waitForPress, debouncePress, waitForRelease, debounceRelease, debouncePressReset
 }stateType;
 
 typedef enum operationEnum
@@ -42,7 +42,7 @@ int main(void)
     currState = waitForPress;
     
     enableInterrupts(); 
-    
+ 
     while(1)
     {
         switch(currState)
@@ -55,6 +55,12 @@ int main(void)
                 delayUs(50);
                 currState = waitForRelease;
                 break;
+            case debouncePressReset:
+                delayUs(50);
+                resetFlag=1;
+                currState=waitForRelease;
+                break;
+                
             case waitForRelease:
                 if(RESET==RELEASED || BUTTON==RELEASED)
                 {
@@ -79,6 +85,7 @@ int main(void)
                 }
                 else if(op == STOPPED)//we check this after a press, so if it was stopped and we hit the button, we want to run or reset
                 {
+         
                     if(resetFlag == 0) //we pushed a button and it wasn't the reset button
                         //we hit the start/stop button, 
                     {
@@ -91,6 +98,7 @@ int main(void)
                     {
                         //reset button was pressed, so we want to display STOPPED, clear the counter
                         count = 0;
+                        //LATDbits.LATD0=1;
                         op = STOPPED;
                         turnOnLED(2);
                     }
@@ -108,17 +116,17 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL7SRS) _CNInterrupt(void)
 {
     int dummy1 = BUTTON; //start stop
     int dummy2 = RESET; //start stop
+    if(RESET == PRESSED)
+    {
+        currState=debouncePressReset;
+        LATDbits.LATD0=1;
+    }
     if(BUTTON == PRESSED)
     {
         currState=debouncePress;
-        LATDbits.LATD0=1;
-        resetFlag=0;
+        resetFlag = 0;
     }
-    else if(RESET == PRESSED)
-    {
-        currState==debouncePress;
-        resetFlag=1;
-    }
+
     IFS1bits.CNDIF = 0; //put flag down for D pins 
     
 }

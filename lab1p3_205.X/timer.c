@@ -12,7 +12,7 @@
 //#include <stdlib.h>
 
 #define us 14 //microsecond
-#define fcy 80000000
+#define fcy 8000000
 //Uses timer 2
 void delayUs(unsigned int delay){
     
