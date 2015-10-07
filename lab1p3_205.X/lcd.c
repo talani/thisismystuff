@@ -12,31 +12,24 @@
 #include "lcd.h"
 #include "timer.h"
 
-////#define LCD_DATA  TRISD
-//#define LCD_D7 PORTDbits.RD12
-//#define LCD_D6 PORTDbits.RD6
-//#define LCD_D5 PORTDbits.RD3
-//#define LCD_D4 PORTDbits.RD1
-
+//defining latch registers for data bits.
 #define LCD_D7 LATDbits.LATD12
 #define LCD_D6 LATDbits.LATD6
 #define LCD_D5 LATDbits.LATD3
 #define LCD_D4 LATDbits.LATD1
 
-
-
-//#define LCD_RS PORTFbits.RF1
-//#define LCD_E PORTDbits.RD9
+//defining latch registers for enable, read, and write
 #define LCD_RS LATFbits.LATF1
 #define LCD_E LATDbits.LATD9
 #define LCD_RW LATGbits.LATG0
 
-
+//defining tristate registers for data bits
 #define TRIS_D7 TRISDbits.TRISD12
 #define TRIS_D6 TRISDbits.TRISD6
 #define TRIS_D5 TRISDbits.TRISD3
 #define TRIS_D4 TRISDbits.TRISD1
 
+//defining tristate registers for read, write, enable
 #define TRIS_RS TRISFbits.TRISF1
 #define TRIS_E  TRISDbits.TRISD9
 #define TRIS_RW TRISGbits.TRISG0
@@ -57,7 +50,6 @@ void writeFourBits(unsigned char word, unsigned int commandType, unsigned int de
     {
         word = word>>4;
     }
-    //command type=RS
     if(commandType==1)//we are writing
     {
         LCD_RS=1;
@@ -90,19 +82,16 @@ void writeLCD(unsigned char word, unsigned int commandType, unsigned int delayAf
 /* Given a character, write it to the LCD. RS should be set to the appropriate value.
  */
 void printCharLCD(char c) {
-    //TODO:
     writeLCD(c, 1, 46);
 }
 /*Initialize the LCD
  */
 void initLCD(void) {
-    // Setup D, RS, and E to be outputs (0).
+    // Setup D, RS, E, and data bits to be outputs (0).
     TRIS_RS = OUTPUT;
     TRIS_E = OUTPUT;
     TRIS_D7 = OUTPUT;
     TRIS_D6 = OUTPUT;
-    //ANSELDbits.ANSD3 = 0;
-    //ANSELDbits.ANSD1 = 0;
     TRIS_D5 = OUTPUT;
     TRIS_D4 = OUTPUT;
     TRIS_RW = OUTPUT;
@@ -151,7 +140,7 @@ void initLCD(void) {
 void printStringLCD(const char* s) {
     while(*s != '\0')
     {
-        printCharLCD(*(s++));
+        printCharLCD(*(s++)); //post increment
         
     }
     
@@ -193,11 +182,14 @@ void testLCD(){
     printStringLCD("Hello!");
     for(i = 0; i < 1000; i++) delayUs(1000);
 }
+
+//returns the character equivalent of an int
 char getChar(int value)
 {
     return '0' + value;
 }
 
+//returns string from integer of time for printing to LCD
 char* getTimeString(int time)
 {
     int FF;
