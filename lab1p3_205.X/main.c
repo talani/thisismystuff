@@ -132,8 +132,8 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL7SRS) _CNInterrupt(void)
 
 void __ISR(_TIMER_1_VECTOR, ipl7SRS) Timer1Handler()
 {  
-    moveCursorLCD(0, 2);
-    printStringLCD(getTimeString(count));
+    moveCursorLCD(0, 2); //move to second line for printing on LCD
+    printStringLCD(getTimeString(count)); //Print the time on LCD
     if(op == RUNNING)
     {
         count++; //increment count to display on LCD whenever we are running
