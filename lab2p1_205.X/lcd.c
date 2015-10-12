@@ -8,28 +8,34 @@
 /* TODO: Make define statements for each pin used in the LCD
  */
 #include <xc.h>
-#include <sys/attribs.h>
 #include "lcd.h"
 #include "timer.h"
 
-//defining latch registers for data bits.
+////#define LCD_DATA  TRISD
+//#define LCD_D7 PORTDbits.RD12
+//#define LCD_D6 PORTDbits.RD6
+//#define LCD_D5 PORTDbits.RD3
+//#define LCD_D4 PORTDbits.RD1
+
 #define LCD_D7 LATDbits.LATD12
 #define LCD_D6 LATDbits.LATD6
 #define LCD_D5 LATDbits.LATD3
 #define LCD_D4 LATDbits.LATD1
 
-//defining latch registers for enable, read, and write
+
+
+//#define LCD_RS PORTFbits.RF1
+//#define LCD_E PORTDbits.RD9
 #define LCD_RS LATFbits.LATF1
 #define LCD_E LATDbits.LATD9
 #define LCD_RW LATGbits.LATG0
 
-//defining tristate registers for data bits
+
 #define TRIS_D7 TRISDbits.TRISD12
 #define TRIS_D6 TRISDbits.TRISD6
 #define TRIS_D5 TRISDbits.TRISD3
 #define TRIS_D4 TRISDbits.TRISD1
 
-//defining tristate registers for read, write, enable
 #define TRIS_RS TRISFbits.TRISF1
 #define TRIS_E  TRISDbits.TRISD9
 #define TRIS_RW TRISGbits.TRISG0
@@ -50,6 +56,7 @@ void writeFourBits(unsigned char word, unsigned int commandType, unsigned int de
     {
         word = word>>4;
     }
+    //command type=RS
     if(commandType==1)//we are writing
     {
         LCD_RS=1;
@@ -61,6 +68,7 @@ void writeFourBits(unsigned char word, unsigned int commandType, unsigned int de
     LCD_D5 = (word>>1) & 0x01;
     LCD_D6 = (word>>2) & 0x01;
     LCD_D7 = (word>>3) & 0x01;
+    
     
     LCD_E = 1; //set enable pin high
     delayUs(1);
@@ -82,12 +90,13 @@ void writeLCD(unsigned char word, unsigned int commandType, unsigned int delayAf
 /* Given a character, write it to the LCD. RS should be set to the appropriate value.
  */
 void printCharLCD(char c) {
+    //TODO:
     writeLCD(c, 1, 46);
 }
 /*Initialize the LCD
  */
 void initLCD(void) {
-    // Setup D, RS, E, and data bits to be outputs (0).
+    // Setup D, RS, and E to be outputs (0).
     TRIS_RS = OUTPUT;
     TRIS_E = OUTPUT;
     TRIS_D7 = OUTPUT;
@@ -97,6 +106,14 @@ void initLCD(void) {
     TRIS_RW = OUTPUT;
     LCD_RW=0; //Can ground this since we are not reading, or we can make it  in software
 
+    // Initilization sequence utilizes specific LCD commands before the general configuration
+    // commands can be utilized. The first few initilition commands cannot be done using the
+    // WriteLCD function. Additionally, the specific sequence and timing is very important.
+
+    
+    //turn LCD off
+    //writeFourBits(0,046,)
+    
     // Enable 4-bit interface
     delayUs(1000); //delay 15ms after VDD reaches 4.5V
     delayUs(1000);
@@ -122,14 +139,28 @@ void initLCD(void) {
     writeFourBits(0x03, 0, 46, 1); //000011
     writeFourBits(0x02, 0, 46, 1); //000010
     
+    //if 0x28 doesn't work, try 0x2C
     writeLCD(0x2B, 0, 46);
     writeLCD(0x08, 0, 46);
     
     clearLCD();
-
+   // writeLCD(0x01, 0, clearLCD());
     writeLCD(0x06, 0, 46);
     writeLCD(0x0C, 0, 46);
+    
 
+    // Function Set (specifies data width, lines, and font.
+
+    // 4-bit mode initialization is complete. We can now configure the various LCD
+    // options to control how the LCD will function.
+
+    // TODO: Display On/Off Control
+        // Turn Display (D) Off
+    // TODO: Clear Display (The delay is not specified in the data sheet at this point. You really need to have the clear display delay here.
+    // TODO: Entry Mode Set
+        // Set Increment Display, No Shift (i.e. cursor move)
+    // TODO: Display On/Off Control
+        // Turn Display (D) On, Cursor (C) Off, and Blink(B) Off
 }
 
 /*
@@ -138,14 +169,18 @@ void initLCD(void) {
  * Since a string is just a character array, try to be clever with your use of pointers.
  */
 void printStringLCD(const char* s) {
+    //TODO:
     while(*s != '\0')
     {
-        printCharLCD(*(s++)); //post increment
+        printCharLCD(*(s++));
         
     }
     
 }
 
+/*
+ * Clear the display.
+ */
 void clearLCD(){
     writeLCD(0x01, 0, 1640);
 }
@@ -181,75 +216,4 @@ void testLCD(){
     for(i = 0; i < 1000; i++) delayUs(1000);
     printStringLCD("Hello!");
     for(i = 0; i < 1000; i++) delayUs(1000);
-}
-
-//returns the character equivalent of an int
-char getChar(int value)
-{
-    return '0' + value;
-}
-
-//returns string from integer of time for printing to LCD
-char* getTimeString(int time)
-{
-    int FF;
-    int SS;
-    int MM;
-    int timeTemp = time;
-    
-    char str[9];
-    char M1;
-    char M2;
-    char S1;
-    char S2;
-    char F1;
-    char F2;
-
-    
-    FF = timeTemp%100;
-    timeTemp = timeTemp/100;
-    SS = timeTemp%60;
-    MM = (timeTemp-SS)/60;
-
-    M1 = getChar(MM/10);
-    moveCursorLCD(0, 2);
-    printCharLCD(M1);
-
-    M2 = getChar(MM%10);
-    moveCursorLCD(1, 2);
-    printCharLCD(M2);
-
-    moveCursorLCD(2, 2);
-    printCharLCD(':');
-
-    S1 = getChar(SS/10);
-    moveCursorLCD(3, 2);
-    printCharLCD(S1);
-
-    S2 = getChar(SS%10);
-    moveCursorLCD(4, 2);
-    printCharLCD(S2);
-
-    moveCursorLCD(5, 2);
-    printCharLCD(':');
-
-    F1 = getChar(FF/10);
-    moveCursorLCD(6, 2);
-    printCharLCD(F1);
-
-    F2 = getChar(FF%10);
-    moveCursorLCD(7, 2);
-    printCharLCD(F2);
-
-    str[0] = (char)M1;
-    str[1] = (char)M2;
-    str[2] = ':';
-    str[3] = (char)S1;
-    str[4] = (char)S2;
-    str[5] = ':';
-    str[6] = (char)F1;
-    str[7] = (char)F2;
-    str[8] = '\0';
-
-    return str;
 }

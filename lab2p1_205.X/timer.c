@@ -26,6 +26,17 @@ void delayUs(unsigned int delay){
     T2CONbits.TON = 0; //turn off Timer2
 }
 
+delayMs(unsigned int delay){
+    
+    TMR2 = 0; //reset the timer
+    PR2 = delay*8; //delay in seconds
+    IFS0bits.T2IF=0; //interrupt flag
+    T2CONbits.ON=1; //turn timer on
+    //while the flag is down, wait
+    while(IFS0bits.T2IF == 0);
+    T2CONbits.ON=0; //turn off Timer2
+}
+
 void initTimer1()
 {
     TMR1 = 0; //clear TMR1
