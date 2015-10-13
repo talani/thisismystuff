@@ -19,7 +19,7 @@
 
 typedef enum stateTypeEnum
 {
-    waitForPress, debouncePress, waitForRelease, debounceRelease, debounceRelease2, printLCD, checkCursor, scan
+    waitForPress, debouncePress, waitForRelease, debounceRelease, debounceRelease2, scan, printLCD, checkCursor
 }stateType;
 
 volatile stateType currState = waitForPress;
