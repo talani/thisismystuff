@@ -11,26 +11,17 @@
 #include "lcd.h"
 #include "timer.h"
 
-////#define LCD_DATA  TRISD
-//#define LCD_D7 PORTDbits.RD12
-//#define LCD_D6 PORTDbits.RD6
-//#define LCD_D5 PORTDbits.RD3
-//#define LCD_D4 PORTDbits.RD1
-
+//Data bits
 #define LCD_D7 LATDbits.LATD12
 #define LCD_D6 LATDbits.LATD6
 #define LCD_D5 LATDbits.LATD3
 #define LCD_D4 LATDbits.LATD1
 
-
-
-//#define LCD_RS PORTFbits.RF1
-//#define LCD_E PORTDbits.RD9
 #define LCD_RS LATFbits.LATF1
 #define LCD_E LATDbits.LATD9
 #define LCD_RW LATGbits.LATG0
 
-
+//TRISTATE for data bits
 #define TRIS_D7 TRISDbits.TRISD12
 #define TRIS_D6 TRISDbits.TRISD6
 #define TRIS_D5 TRISDbits.TRISD3
@@ -51,12 +42,10 @@
  * when you are simply writing a character. Otherwise, RS is '0'.
  */
 void writeFourBits(unsigned char word, unsigned int commandType, unsigned int delayAfter, unsigned int lower){
-    //TODO:
     if(lower==0) //upper
     {
         word = word>>4;
     }
-    //command type=RS
     if(commandType==1)//we are writing
     {
         LCD_RS=1;
@@ -68,29 +57,24 @@ void writeFourBits(unsigned char word, unsigned int commandType, unsigned int de
     LCD_D5 = (word>>1) & 0x01;
     LCD_D6 = (word>>2) & 0x01;
     LCD_D7 = (word>>3) & 0x01;
-    
-    
+   
     LCD_E = 1; //set enable pin high
     delayUs(1);
     LCD_E = 0; //set enable pin low
     delayUs(1);
     delayUs(delayAfter);
-
 }
 
 /* Using writeFourBits, this function should write the two bytes of a character
  * to the LCD.
  */
 void writeLCD(unsigned char word, unsigned int commandType, unsigned int delayAfter){
-    //TODO:
     writeFourBits(word, commandType, delayAfter, 0); //upper
     writeFourBits(word, commandType, delayAfter, 1); //lower
 }
 
-/* Given a character, write it to the LCD. RS should be set to the appropriate value.
- */
+/* Given a character, write it to the LCD. RS should be set to the appropriate value.*/
 void printCharLCD(char c) {
-    //TODO:
     writeLCD(c, 1, 46);
 }
 /*Initialize the LCD
@@ -172,8 +156,7 @@ void printStringLCD(const char* s) {
     //TODO:
     while(*s != '\0')
     {
-        printCharLCD(*(s++));
-        
+        printCharLCD(*(s++)); //post increment
     }
     
 }

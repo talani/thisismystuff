@@ -37,16 +37,4 @@ delayMs(unsigned int delay){
     T2CONbits.ON=0; //turn off Timer2
 }
 
-void initTimer1()
-{
-    TMR1 = 0; //clear TMR1
-    IEC0bits.T1IE = 1; //enable the interrupt
-    IFS0bits.T1IF = 0;// Put the flag down
-    IPC1bits.T1IP = 7;// Configure the Interrupt Priority
-    
-    PR1 = ((fcy*0.01)/256)-1;
-    T1CONbits.TCKPS=3; //setting pre-scale to 256
-    
-    T1CONbits.ON = 1; //turn timer on
-}
 

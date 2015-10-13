@@ -8,43 +8,48 @@
 #ifndef KEYPAD_H
 #define	KEYPAD_H
 
-#define TRISCOL1 TRISCbits.TRISC14
-#define TRISCOL2 TRISCbits.TRISC2
+//TRISTATE for columns
+#define TRISCOL2 TRISCbits.TRISC14
+#define TRISCOL1 TRISCbits.TRISC2
 #define TRISCOL3 TRISCbits.TRISC4
 
-#define TRISROW1 TRISEbits.TRISE7
-#define TRISROW2 TRISEbits.TRISE5
-#define TRISROW3 TRISEbits.TRISE3
-#define TRISROW4 TRISEbits.TRISE1
+//TRISTATE for rows
+#define TRISROW1 TRISGbits.TRISG15
+#define TRISROW4 TRISGbits.TRISG12
+#define TRISROW3 TRISDbits.TRISD5
+#define TRISROW2 TRISDbits.TRISD11
 
-#define COL1 PORTCbits.RC14
-#define COL2 PORTCbits.RC2
+//PORT to read columns
+#define COL2 PORTCbits.RC14
+#define COL1 PORTCbits.RC2
 #define COL3 PORTCbits.RC4
 
-#define ROW1 LATEbits.LATE7
-#define ROW2 LATEbits.LATE5
-#define ROW3 LATEbits.LATE3
-#define ROW4 LATEbits.LATE1
+//LAT to write to rows
+#define ROW1 LATGbits.LATG15
+#define ROW4 LATGbits.LATG12
+#define ROW3 LATDbits.LATD5
+#define ROW2 LATDbits.LATD11
 
-#define ROW1PORT PORTEbits.RE7
-#define ROW2PORT PORTEbits.RE5
-#define ROW3PORT PORTEbits.RE3
-#define ROW4PORT PORTEbits.RE1
+//PORT to read rows
+#define ROW1PORT PORTGbits.RG15
+#define ROW4PORT PORTGbits.RG12
+#define ROW3PORT PORTDbits.RD5
+#define ROW2PORT PORTDbits.RD11
 
-#define ODCROW1 ODCEbits.ODCE7
-#define ODCROW2 ODCEbits.ODCE5
-#define ODCROW3 ODCEbits.ODCE3
-#define ODCROW4 ODCEbits.ODCE1
+//ODC bits for rows
+#define ODCROW1 ODCGbits.ODCG15
+#define ODCROW4 ODCGbits.ODCG12
+#define ODCROW3 ODCDbits.ODCD5
+#define ODCROW2 ODCDbits.ODCD11
 
 #define OUTPUT 0
 #define INPUT 1
 
-#define ENABLE 0
-#define DISABLE 1
+#define ENABLE 0 //power
+#define DISABLE 1 //NO POWER
 
 #define PRESSED 0
 #define RELEASED 1
-
 
 void initKeypad(void);
 char scanKeypad(void);

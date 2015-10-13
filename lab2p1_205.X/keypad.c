@@ -15,15 +15,6 @@ void initKeypad(void){
     IEC1bits.CNCIE = 1; //Enable the interrupt
     
     //No Analog pins..
-
-    TRISDbits.TRISD13 = INPUT;           // Configure switch as input
-    CNCONDbits.ON = 1;                  // Enable overall interrupt
-    CNENDbits.CNIED13 = 1;         // Enable pin CN
-    CNPUDbits.CNPUD13 = 1;         // Enable pull-up resistor
-    IFS1bits.CNDIF = 0;                 // Put down the flag
-    //IPC8bits.CNIP = 7;                  // Configure interrupt priority
-    //IPC8bits.CNIS = 4;                  // Configure the interrupt sub-priority
-    IEC1bits.CNDIE = 1;           // Enable interrupt for D pins
     
     //Set Rows to outputs
     TRISROW1 = OUTPUT; 
@@ -47,18 +38,11 @@ void initKeypad(void){
     ROW2 = ENABLE;
     ROW3 = ENABLE;
     ROW4 = ENABLE;
-
-    //Enable pull up on COLs
-//    CNPUCbits.CNPUC14 = 1;
-//    CNPUCbits.CNPUC2 = 1;
-//    CNPUCbits.CNPUC4 = 1;
-    
     
     //Enable the interrupt for COLs
     CNENCbits.CNIEC14 = 1;
     CNENCbits.CNIEC2 = 1;
     CNENCbits.CNIEC4 = 1;
-
 }
 
 /* This function will be called AFTER you have determined that someone pressed
@@ -73,99 +57,112 @@ char scanKeypad(void){
     //only return the char if 1 button is pressed. Else return -1
     int numberOfPresses=0; //counts how many buttons on the keypad were pressed
     
+    IEC1bits.CNCIE = 0; //Disable the interrupt
+    
     //Disable all ROWs 
     ROW1 = DISABLE;
     ROW2 = DISABLE;
     ROW3 = DISABLE;
     ROW4 = DISABLE;
     
-    //Check ROW1 only
     ROW1 = ENABLE;
-    delayMs(1); //Is this too long?
+    delayMs(5);
     //Check the COLs
     if(COL1 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '1';
     }
-    else if (COL2 == PRESSED)
+    if (COL2 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '2';
     }
-    else if(COL3 == PRESSED)
+    if(COL3 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '3';
     }
     
-    ROW1 = DISABLE;
-    ROW2 = ENABLE;
-    delayMs(1);
+    ROW1 = DISABLE; //I don't want to check ROW1 anymore
+    
+    ROW2 = ENABLE; //check ROW2 now
+    delayMs(5);
     //Check COLs
     if(COL1 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '4';
     }
-    else if (COL2 == PRESSED)
+    if (COL2 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '5';
     }
-    else if(COL3 == PRESSED)
+    if(COL3 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '6';
     }
     
-    ROW2 = DISABLE;
-    ROW3 = ENABLE;
-    delayMs(1);
+    ROW2 = DISABLE; //I don't want to check ROW2 anymore
+    
+    ROW3 = ENABLE; //check ROW3 now
+    delayMs(5);
     //Check COLs
     if(COL1 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '7';
     }
-    else if (COL2 == PRESSED)
+    if (COL2 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '8';
     }
-    else if(COL3 == PRESSED)
+    if(COL3 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '9';
     }
     
-    ROW3 = DISABLE;
-    ROW4 = ENABLE;
-    delayMs(1);
+    ROW3 = DISABLE; //I don't want to check ROW3 anymore
+    
+    ROW4 = ENABLE; //check ROW4 now
+    delayMs(5);
     //Check COLs
     if(COL1 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '*';
     }
-    else if (COL2 == PRESSED)
+    if (COL2 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '0';
     }
-    else if(COL3 == PRESSED)
+    if(COL3 == PRESSED)
     {
-        numberOfPresses += 1;
+        numberOfPresses++;
         key = '#';
     }   
-
-    if(numberOfPresses == 1)
+    ROW4 = DISABLE; //I don't want to check ROW4 anymore
+    
+    //Enable all rows to catch interrupt
+    ROW1 = ENABLE;
+    ROW2 = ENABLE;
+    ROW3 = ENABLE;
+    ROW4 = ENABLE;
+    
+    IEC1bits.CNCIE = 1; //Enable the interrupt
+    
+    if(numberOfPresses == 1) //checks if only 1 key was pressed by user
     {
-        return key;
+        return key; //return that key to print in FSM
     }
     else
     {
-        return -1;
+        return -1; //more than one key was pressed, return -1 to not print in FSM
     }
 }
 
