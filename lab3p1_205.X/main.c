@@ -14,6 +14,7 @@
 int main(void)
 {
     SYSTEMConfigPerformance(80000000);
+    initADC();
     initLCD();
     enableInterrupts();
     
