@@ -1,4 +1,3 @@
-
 /* 
  * File:   interrupt.c
  * Author: gvanhoy
@@ -6,6 +5,7 @@
  * Created on August 27, 2015, 3:32 PM
  */
 
+#include <sys/attribs.h>
 #include <xc.h>
 #include "interrupt.h"
 
