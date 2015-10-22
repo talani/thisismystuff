@@ -23,14 +23,16 @@ int main(void)
 {
     SYSTEMConfigPerformance(40000000);
     initLCD();
-    
     enableInterrupts();
     initADC(); //
+    initPWM();
+    initTimer3();
     
    while(1)
     {
         startRead();
         Dval = waitToFinish();
+        OC2RS = Dval;
         Aval = (float)Dval * (3.3/1023.0); //get analog voltage value from digital value
         sprintf(str, "%1.5f", Aval);
         moveCursorLCD(0,1);
