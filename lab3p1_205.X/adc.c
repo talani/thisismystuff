@@ -35,19 +35,12 @@ void startRead()
 {
     AD1CON1bits.SAMP = 1;
     AD1CON1bits.DONE = 1;
-    //IEC0bits.AD1IE = 1;
-//    IFS0bits.AD1IF = 0;
 }
 int waitToFinish()
 {
     int Dval=0;
-    //while(IFS0bits.AD1IF == 0);
     while(AD1CON1bits.DONE == 0);
-    
-        Dval = ADC1BUF0;
-    
-//    IFS0bits.AD1IF = 0;
+    Dval = ADC1BUF0;
     AD1CON1bits.SAMP = 0; //sample to convert
-    //AD1CON1bits.DONE = 0;
     return Dval;
 }

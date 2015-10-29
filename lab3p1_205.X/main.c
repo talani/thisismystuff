@@ -15,6 +15,13 @@
 #include "timer.h"
 #include "pwm.h"
 
+typedef enum stateTypeEnum{
+    FWD, idle1, BCKWD, idle2
+} stateType;
+
+volatile stateType currState = FWD;
+volatile stateType nextState;
+
 volatile unsigned int Dval = 0;
 volatile float Aval = 0;
 char str[16];
@@ -32,15 +39,65 @@ int main(void)
     {
         startRead();
         Dval = waitToFinish();
-        OC2RS = Dval;
+        
+//        if(PORTDbits.RD6 == 0) //pressed FWD
+//        {
+//            PIN3 = 0;
+//            PIN4 = 0;
+//            OC4RS = Dval;
+//            OC3RS = Dval;  
+//        }
+//        else if (PORTDbits.RD6 == 1) //released BCKWARD
+//        {
+//            PIN1 = 0;
+//            PIN2 = 0;
+//            OC4RS = Dval;
+//            OC3RS = Dval;  
+//        }
+        //01 REVERSE
+        //10 FORWARD
+        LEFTMOTORDIRECTION1 = 1; 
+        LEFTMOTORDIRECTION2 = 0; 
+        
+        RIGHTMOTORDIRECTION1 = 1;
+        RIGHTMOTORDIRECTION2 = 0;
+        
+        OC4RS = Dval; //RIGHT
+        OC3RS = Dval; //LEFT
+        
+        
+        
         Aval = (float)Dval * (3.3/1023.0); //get analog voltage value from digital value
         sprintf(str, "%1.5f", Aval);
         moveCursorLCD(0,1);
         printStringLCD(str);
+        moveCursorLCD(0,2);
+        sprintf(str, "%d,%d", PR3, OC3RS);
+        printStringLCD(str);
+        
+        
+//        switch(currState)
+//        {
+//            case FWD:
+////                OC3RS = 10;
+////                OC4RS = 10;
+//                break;
+//            case idle1:
+//                break;
+//            case BCKWD:
+//                break;
+//            case idle2:
+//                break;     
+//        }
+        
     }
     return 0;
 }
 
+//change notification
+//{
+//    if button is pressed, currState=nextState;
+//}
 
 //void __ISR(_ADC_VECTOR, IPL7AUTO) _ADCInterrupt(void)
 //{
