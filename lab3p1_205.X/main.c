@@ -28,6 +28,7 @@ volatile stateType currState = idle1;
 volatile stateType nextState;
 
 volatile unsigned int Dval = 0;
+volatile float temp =0;
 volatile float Aval = 0;
 char str[16];
 char str2[16];
@@ -39,7 +40,6 @@ int main(void)
     initADC(); //
     initPWM();
     initTimer3();
-    TRISDbits.TRISD0 = 0;
     
    while(1)
     {
@@ -125,7 +125,6 @@ updateDirectionState()
         RIGHTMOTORDIRECTION2 = 0;
         currState = FWD;
         dir = Backward;
-        LATDbits.LATD0 = 1;
     }
     else if(dir == Backward)
     {
@@ -135,29 +134,46 @@ updateDirectionState()
         RIGHTMOTORDIRECTION2 = 0;
         currState = BCKWD;
         dir = Forward;
-        LATDbits.LATD0 = 0;
     }
 }
 
 updateSpeed()
 {
-    OC4RS = Dval; //RIGHT
-    OC3RS = Dval; //LEFT
+    if(Dval == 0)
+    {
+        //turn on left motor at full power
+        OC4RS = 0; //RIGHT
+        OC3RS = 1023; //LEFT
+        
+    }
+    else if(Dval == 1023)
+    {
+        //turn on right motor at full power
+        OC4RS = 1023; //RIGHT
+        OC3RS = 0; //LEFT
+    }
+    else if(Dval >=500 && Dval <=524)
+    {
+        //turn on both motors at full power
+        OC4RS = 1023; //RIGHT
+        OC3RS = 1023; //LEFT
+    }
+    else if(Dval>0 && Dval<500)
+    {
+        //right wheel is full power
+        OC4RS = 1023; //RIGHT
+        //left wheel is fraction
+        temp = Dval/499;
+        OC3RS = Dval*temp; //LEFT
+    }
+    else if(Dval>524 && Dval<1023)
+    {
+        //left wheel is full power
+        OC3RS = 1023; //LEFT
+        //right wheel is fraction
+        temp = Dval-524;
+        temp = temp/499;
+        OC4RS = Dval*temp; //RIGHT
+    }
 }
 
-
-//change notification
-//{
-//    if button is pressed, currState=nextState;
-//}
-
-//void __ISR(_ADC_VECTOR, IPL7AUTO) _ADCInterrupt(void)
-//{
-//    IEC0bits.AD1IE = 0;
-////    IFS0bits.AD1IF = 0;
-////    TRISDbits.TRISD0 = 0;
-////    TRISDbits.TRISD1 = 0;
-////    TRISDbits.TRISD2 = 0;
-////    LATD += 1;
-//    Dval = ADC1BUF0; //digital value
-//}
