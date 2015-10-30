@@ -4,6 +4,8 @@
 
 void initPWM();
 
+#define SWITCH PORTDbits.RD7
+
 //FORWARD
 #define PIN1 RPD11Rbits.RPD11R //OC4 RIGHT
 #define PIN2 RPB5Rbits.RPB5R //OC3 LEFT
