@@ -46,19 +46,10 @@ int main(void)
         startRead();
         Dval = waitToFinish();
         
-        //01 REVERSE
-        //10 FORWARD
-        
         Aval = (float)Dval * (3.3/1023.0); //get analog voltage value from digital value
         sprintf(str, "%1.5f", Aval);
         moveCursorLCD(0,1);
         printStringLCD(str);
-        moveCursorLCD(0,2);
-        sprintf(str, "%d", Dval);
-        printStringLCD(str);
-        
-        
-        
         switch(currState)
         {
             case FWD:
