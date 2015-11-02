@@ -1,9 +1,8 @@
-
 /* 
  * File:   timer.h
- * Author: gvanhoy
+ * Author: Tamara, Hannah, Alisha, Ashley
  *
- * Created on December 30, 2014, 8:07 PM
+ * Created on October 18, 2015, 2:02 PM
  */
 
 #ifndef INITTIMER_H

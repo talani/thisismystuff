@@ -1,6 +1,6 @@
 /* 
  * File:   main.c
- * Author: Tammy
+ * Author: Tamara, Hannah, Alisha, Ashley
  *
  * Created on October 18, 2015, 2:02 PM
  */
@@ -16,118 +16,131 @@
 #include "pwm.h"
 
 typedef enum stateTypeEnum{
-    FWD, idle1, BCKWD, idle2, debouncePress, updateDirection, waitForRelease, debounceRelease
+    FWD, BCKWD, debouncePress, waitForRelease, debounceRelease, StartState, waitForPress, STOP
 } stateType;
 
 typedef enum directionEnum{
-    Forward, Backward
+    Forward1, Forward2, Backward2, Start, Backward1
 } direction;
 
-volatile direction dir = Forward;
-volatile stateType currState = idle1;
-volatile stateType nextState;
+volatile direction dir = Start; 
+volatile stateType currState = StartState;
 
-volatile unsigned int Dval = 0;
-volatile float temp =0;
-volatile float Aval = 0;
-char str[16];
-char str2[16];
+volatile unsigned int Dval = 0; //digital value
+volatile float temp =0; //temporary variable for updating the speed of the motor
+volatile float Aval = 0; //analog value
+char str[16]; //string to print the analog value to line one of the LCD
 int main(void)
 {
     SYSTEMConfigPerformance(40000000);
-    initLCD();
+    initLCD(); //initialize the LCD
     enableInterrupts();
-    initADC(); //
-    initPWM();
-    initTimer3();
+    initADC(); //initialize the ADC
+    initPWM(); //initialize the PWM
+    initTimer3(); //initialize the timer
     
    while(1)
     {
-        startRead();
-        Dval = waitToFinish();
+        startRead(); //starts reading from ADC
+        Dval = waitToFinish(); //save digital value
         
         Aval = (float)Dval * (3.3/1023.0); //get analog voltage value from digital value
-        sprintf(str, "%1.5f", Aval);
-        moveCursorLCD(0,1);
-        printStringLCD(str);
+        sprintf(str, "%1.5f", Aval); //save analog value to string
+        moveCursorLCD(0,1); //move to the first line for printing on the LCD
+        printStringLCD(str); //print the analog value to lcd
         switch(currState)
         {
-            case FWD:
-                LEFTMOTORDIRECTION1 = 1; 
+            case StartState:
+                //turn off the motors
+                LEFTMOTORDIRECTION1 = 0; 
                 LEFTMOTORDIRECTION2 = 0; 
-        
-                RIGHTMOTORDIRECTION1 = 1;
+                RIGHTMOTORDIRECTION1 = 0;
                 RIGHTMOTORDIRECTION2 = 0;
-                
-                currState = idle2;
+                currState = waitForPress;
                 break;
-            case idle1:
+            case waitForPress: //waits for switch press
+                //we don't want to move the motors in between states
+                //when dir is start or forward2 or backward2, the motors are stopped
+                if(dir != Start && dir != Forward2 && dir != Backward2)
+                {
+                    updateSpeed();
+                }
                 if(SWITCH == 0) //pressed
                 {
-                    currState = debouncePress;   
+                    currState = debouncePress;
                 }
                 break;
             case debouncePress:
-                delayUs(50);
+                delayUs(50); //delay for debounce
                 currState = waitForRelease;
                 break;
             case waitForRelease:
-                if(SWITCH == 1)
+                if(SWITCH == 1) //released
                 {
                     currState = debounceRelease;
                 }
                 break;
             case debounceRelease:
-                delayUs(50);
-                currState = updateDirection;  
+                delayUs(50); //delay for debounce
+                updateDirectionState(); //function to update the direction of the motor
                 break;
-            case updateDirection:
-                updateDirectionState();
-                break;
-            case BCKWD:
+            case STOP: //stop all motors
                 LEFTMOTORDIRECTION1 = 0; 
-                LEFTMOTORDIRECTION2 = 1; 
-        
+                LEFTMOTORDIRECTION2 = 0; 
+                RIGHTMOTORDIRECTION1 = 0;
+                RIGHTMOTORDIRECTION2 = 0;
+                currState = waitForPress;
+                break;
+            case FWD: //move motors forward
+                LEFTMOTORDIRECTION1 = 1; 
+                LEFTMOTORDIRECTION2 = 0;         
+                RIGHTMOTORDIRECTION1 = 1;
+                RIGHTMOTORDIRECTION2 = 0;
+                currState = waitForPress;
+                break;
+            case BCKWD: //move motors backward
+                LEFTMOTORDIRECTION1 = 0; 
+                LEFTMOTORDIRECTION2 = 1;        
                 RIGHTMOTORDIRECTION1 = 0;
                 RIGHTMOTORDIRECTION2 = 1;
-
-                currState = idle2;
+                currState = waitForPress;
                 break;
-            case idle2:
-                updateSpeed();
-                if(SWITCH == 0) //pressed
-                {
-                    currState = debouncePress;
-                }
-                break;     
-        }
-        
+        }    
     }
     return 0;
 }
-
+//uses the dir variable to control the direction of the motors.
+//if we want to reverse the direction of the motor, we want to stop first and then reverse.
+///if we want to move forward from the reverse direction, we want to stop first and then move forward
 updateDirectionState()
 {
-    if(dir == Forward)
+    if(dir == Start) //this is the first press of the program, we want to go forward
     {
-        LEFTMOTORDIRECTION1 = 0; 
-        LEFTMOTORDIRECTION2 = 0; 
-        RIGHTMOTORDIRECTION1 = 0;
-        RIGHTMOTORDIRECTION2 = 0;
         currState = FWD;
-        dir = Backward;
+        dir = Forward1;
     }
-    else if(dir == Backward)
+    else if(dir == Forward1) //we were going forward, we pressed the button, so now we want to stop
     {
-        LEFTMOTORDIRECTION1 = 0; 
-        LEFTMOTORDIRECTION2 = 0; 
-        RIGHTMOTORDIRECTION1 = 0;
-        RIGHTMOTORDIRECTION2 = 0;
+        currState = STOP;
+        dir = Forward2;
+    }
+    else if(dir == Forward2) //we were stopped, now we want to go backward
+    {
         currState = BCKWD;
-        dir = Forward;
+        dir = Backward1;
+    }
+    else if(dir == Backward1) //we were going backward, we pressed the button, so now we want to stop
+    {
+        currState = STOP;
+        dir = Backward2;
+    }
+    else if(dir == Backward2) //we were stopped, now we want to go forward
+    {
+        currState = FWD;
+        dir = Forward1;
     }
 }
-
+//Use the Dval variable to control the speed of the motors. 
 updateSpeed()
 {
     if(Dval == 0)
@@ -168,4 +181,3 @@ updateSpeed()
         OC4RS = Dval*temp; //RIGHT
     }
 }
-

@@ -1,5 +1,9 @@
-//tamara alani
-
+/* 
+ * File:   adc.h
+ * Author: Tamara, Hannah, Alisha, Ashley
+ *
+ * Created on October 18, 2015, 2:02 PM
+ */
 #ifndef ADC_H
 #define	ADC_H
 

@@ -1,8 +1,8 @@
-/*
+/* 
  * File:   lcd.h
- * Authors:
+ * Author: Tamara, Hannah, Alisha, Ashley
  *
- * Created on December 31, 2014, 1:39 PM
+ * Created on October 18, 2015, 2:02 PM
  */
 
 void writeLCD(unsigned char word, unsigned int commandType, unsigned int delay);

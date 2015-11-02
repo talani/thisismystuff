@@ -1,5 +1,8 @@
 /* 
- * File:   pwm.h
+ * File:   pwm.c
+ * Author: Tamara, Hannah, Alisha, Ashley
+ *
+ * Created on October 18, 2015, 2:02 PM
  */
 
 #include <sys/attribs.h>
