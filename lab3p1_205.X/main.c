@@ -146,6 +146,7 @@ updateSpeed()
     else if(Dval >=500 && Dval <=524)
     {
         //turn on both motors at full power
+        //between 1.613V and 1.6903V
         OC4RS = 1023; //RIGHT
         OC3RS = 1023; //LEFT
     }
