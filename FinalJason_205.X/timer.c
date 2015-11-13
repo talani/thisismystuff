@@ -25,19 +25,19 @@ void delayUs(unsigned int delay){
     
 }
 
-//void delayMs(unsigned int delay){
-//    
-//    TMR2 = 0; //reset the timer
-//    PR2 = delay*8; //delay in seconds
-//    T2CONbits.TCKPS = 0; //pre-scalar = 1
-//    IFS0bits.T2IF = 0; //put Timer2 interrupt flag down
-//    T2CONbits.TON = 1; //turn on Timer2
-//
-//    while(IFS0bits.T2IF == 0);    //while the flag is down, wait
-//
-//    IFS0bits.T2IF = 0; //put the flag down afterwards.
-//    T2CONbits.TON = 0; //turn off Timer2
-//}
+void delayMs(unsigned int delay){
+    
+    TMR2 = 0; //reset the timer
+    PR2 = delay*8; //delay in seconds
+    T2CONbits.TCKPS = 0; //pre-scalar = 1
+    IFS0bits.T2IF = 0; //put Timer2 interrupt flag down
+    T2CONbits.TON = 1; //turn on Timer2
+
+    while(IFS0bits.T2IF == 0);    //while the flag is down, wait
+
+    IFS0bits.T2IF = 0; //put the flag down afterwards.
+    T2CONbits.TON = 0; //turn off Timer2
+}
 
 void initTimer3()
 {
