@@ -37,7 +37,7 @@
 //Rightmost PIN49 J10 --> RB12 AN12
 
 typedef enum stateTypeEnum{
-    idle, findLine, moveRight, moveLeft, moveFwd
+    idle, findLine, moveRight, moveLeft, moveFwd, debouncePress, waitForRelease, debounceRelease
 } stateType;
 
 typedef enum endTypeEnum{
@@ -116,27 +116,32 @@ int main(void)
 
 scan()
 {
-    if(adcVal3 < THRESHOLD) //left transistor detected black
+    if(currState==findLine || currState==moveFwd || currState==moveRight || currState==moveLeft)
     {
-        L3 = 1;
-    }
-    else L3 = 0; //left transistor detected NOT black
+        if(adcVal3 < THRESHOLD) //left transistor detected black
+        {
+           L3 = 1;
+        }
+        else L3 = 0; //left transistor detected NOT black
     
-    if(adcVal2 < THRESHOLD) //middle transistor detected black
-    {
-        L2 = 1;
-    }
-    else L2 = 0; //middle transistor detected NOT black
+        if(adcVal2 < THRESHOLD) //middle transistor detected black
+        {
+            L2 = 1;
+        }
+        else L2 = 0; //middle transistor detected NOT black
     
-    if(adcVal1 < THRESHOLD) //right transistor detected black
-    {
-        L1 = 1;
-    }
-    else L1 = 0; //right transistor detected NOT black
+        if(adcVal1 < THRESHOLD) //right transistor detected black
+        {
+            L1 = 1;
+        }
+        else L1 = 0; //right transistor detected NOT black
+        }
 }
 
 determineState()
 {
+    if(currState==findLine || currState==moveFwd || currState==moveRight || currState==moveLeft)
+    {
        if(L3==0 && L2==0 && L1==0) //000 find the line, no black was detected
        {
            currState = findLine;
@@ -169,6 +174,7 @@ determineState()
        {
            currState = moveFwd;
        }
+    }
 }
 
 followLine()
@@ -181,7 +187,26 @@ followLine()
                 LEFTMOTORDIRECTION2 = 0; 
                 RIGHTMOTORDIRECTION1 = 0;
                 RIGHTMOTORDIRECTION2 = 0;
+                //wait for button press
+                if(SWITCH == 0) //pressed
+                {
+                    currState = debouncePress;
+                }
                break;
+        case debouncePress:
+            delayMs(10);
+            currState = waitForRelease;
+            break;
+        case waitForRelease:
+            if(SWITCH == 1) //released
+            {
+                currState = debounceRelease;
+            }
+            break;
+        case debounceRelease:
+            delayMs(10);
+            currState = findLine;
+            break;
            case findLine:
                //figure 8
                break;
