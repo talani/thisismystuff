@@ -16,20 +16,11 @@
 #include "pwm.h"
 
 #define THRESHOLD 500
-//if value < 500 = BLACK
-//if value > 500 = WHITE
+//if value < 450 = BLACK
+//if value > 450 = WHITE
 #define timeToTurn 10 //ms
-
-//FWD                 
-    //LEFTMOTORDIRECTION1 = 1; 
-    //LEFTMOTORDIRECTION2 = 0;         
-    //RIGHTMOTORDIRECTION1 = 1;
-    //RIGHTMOTORDIRECTION2 = 0;
-//BCKWRD                 
-    //LEFTMOTORDIRECTION1 = 0; 
-    //LEFTMOTORDIRECTION2 = 1;         
-    //RIGHTMOTORDIRECTION1 = 0;
-    //RIGHTMOTORDIRECTION2 = 1;
+#define LW OC4RS //LEFT wheel
+#define RW OC3RS //RIGHT Wheel
 
 //PhotoTransistors
 //Leftmost PIN7 J10 --> RE5 AN22
@@ -49,14 +40,16 @@ typedef enum actionTypeEnum{
 }actionType;
 
 volatile unsigned int adcVal0 = 0; //pot
-volatile unsigned int adcVal1 = 0; //right
+volatile unsigned int adcVal1 = 0; //left
 volatile unsigned int adcVal2 = 0; //middle
-volatile unsigned int adcVal3 = 0; //left
+volatile unsigned int adcVal3 = 0; //right
+
+volatile int flag = 0; //0=go, 1=stop
 
 //logic values for the three transistors
-volatile int L1 = 0; //right
+volatile int L1 = 0; //left
 volatile int L2 = 0; //middle
-volatile int L3 = 0; //left
+volatile int L3 = 0; //right
 
 volatile stateType currState = idle;
 volatile endType end = state0;
@@ -88,15 +81,16 @@ int main(void)
        startRead(3); //starts reading from ADC (Rightmost)
        adcVal3 = waitToFinish3(); //save digital value of rightmost phototransistor
        
-       moveCursorLCD(0,1);
-       sprintf(str, "%d", adcVal0); 
-       printStringLCD(str);
-       
        moveCursorLCD(0,2);
-       sprintf(str, "%d,%d,%d", adcVal3/10, adcVal2/10, adcVal1/10);
+       sprintf(str, "%d,%d,%d", adcVal1/10, adcVal2/10, adcVal3/10);
        printStringLCD(str);
        
        scan(); //scan three transistors
+       
+       moveCursorLCD(0,1);
+       sprintf(str, "%d, %d, %d", L1, L2, L3);
+       printStringLCD(str);
+       
        determineState();
        
        switch(jason)
@@ -108,8 +102,7 @@ int main(void)
            case turnAroundJason:
                turnAround();
                break;      
-       }
-       
+       }       
    }
     return 0;
 }
@@ -118,59 +111,51 @@ scan()
 {
     if(currState==findLine || currState==moveFwd || currState==moveRight || currState==moveLeft)
     {
-        if(adcVal3 < THRESHOLD) //left transistor detected black
-        {
-           L3 = 1;
-        }
-        else L3 = 0; //left transistor detected NOT black
-    
-        if(adcVal2 < THRESHOLD) //middle transistor detected black
-        {
-            L2 = 1;
-        }
+        
+        if(adcVal1 < THRESHOLD) L1 = 1;//right transistor detected black
+        else L1 = 0; //right transistor detected NOT black
+        
+        if(adcVal2 < THRESHOLD) L2 = 1; //middle transistor detected black
         else L2 = 0; //middle transistor detected NOT black
     
-        if(adcVal1 < THRESHOLD) //right transistor detected black
-        {
-            L1 = 1;
-        }
-        else L1 = 0; //right transistor detected NOT black
-        }
+        if(adcVal3 < THRESHOLD) L3 = 1; //left transistor detected black
+        else L3 = 0; //left transistor detected NOT black
+    }
 }
 
 determineState()
 {
     if(currState==findLine || currState==moveFwd || currState==moveRight || currState==moveLeft)
     {
-       if(L3==0 && L2==0 && L1==0) //000 find the line, no black was detected
+       if(L1==0 && L2==0 && L3==0) //000 find the line, no black was detected
        {
            currState = findLine;
        }
-       else if(L3==0 && L2==0 && L1==1) //move right
+       else if(L1==0 && L2==0 && L3==1) //  move right
        {
            currState = moveRight;
        }
-       else if(L3==0 && L2==1 && L1==0) //move forward
+       else if(L1==0 && L2==1 && L3==0) //move forward
        {
            currState = moveFwd;
        }
-       else if(L3==0 && L2==1 && L1==1) //move right
+       else if(L1==0 && L2==1 && L3==1) // 011 move right
        {
            currState = moveRight;
        }
-       else if(L3==1 && L2==0 && L1==0) //move left
+       else if(L1==1 && L2==0 && L3==0) // 100 move left
        {
            currState = moveLeft;
        }
-       else if(L3==1 && L2==0 && L1==1) //shouldn't occur
+       else if(L1==1 && L2==0 && L3==1) //shouldn't occur
        {
            currState = moveFwd;
        } 
-       else if(L3==1 && L2==1 && L1==0) //move left
+       else if(L1==1 && L2==1 && L3==0) // 011 move left
        {
            currState = moveLeft;
        }
-       else if(L3==1 && L2==1 && L1==1) //shouldn't occur
+       else if(L1==1 && L2==1 && L3==1) //shouldn't occur
        {
            currState = moveFwd;
        }
@@ -182,6 +167,7 @@ followLine()
     switch(currState)
        {
            case idle:
+               flag = 0;
                 //turn off the motors
                 LEFTMOTORDIRECTION1 = 0; 
                 LEFTMOTORDIRECTION2 = 0; 
@@ -205,39 +191,50 @@ followLine()
             break;
         case debounceRelease:
             delayMs(10);
-            currState = findLine;
+            if(flag == 1) currState = idle;
+            else currState = findLine;
             break;
            case findLine:
-               //figure 8
+               checkStop();
+               //DONUT
+               LEFTMOTORDIRECTION1 = 0; 
+               LEFTMOTORDIRECTION2 = 1;         
+               RIGHTMOTORDIRECTION1 = 0;
+               RIGHTMOTORDIRECTION2 = 1;
+               RW = 325;
+               LW = 250; 
                break;
            case moveRight:
+               checkStop();
                // Turn off right wheel
                // Turn on left wheel at full power
-                LEFTMOTORDIRECTION1 = 1; 
-                LEFTMOTORDIRECTION2 = 0;         
-                RIGHTMOTORDIRECTION1 = 1;
-                RIGHTMOTORDIRECTION2 = 0;
-                OC4RS = 0; //RIGHT
-                OC3RS = 1023; //LEFT
+                LEFTMOTORDIRECTION1 = 0; 
+                LEFTMOTORDIRECTION2 = 1;         
+                RIGHTMOTORDIRECTION1 = 0;
+                RIGHTMOTORDIRECTION2 = 1;
+                RW = 100; 
+                LW = 475; 
                break;
            case moveLeft:
-               // Turn off left wheel
-               // Turn on right wheel at full power
-                LEFTMOTORDIRECTION1 = 1; 
-                LEFTMOTORDIRECTION2 = 0;         
-                RIGHTMOTORDIRECTION1 = 1;
-                RIGHTMOTORDIRECTION2 = 0;
-                OC4RS = 1023; //RIGHT
-                OC3RS = 0; //LEFT
+                checkStop();
+                //Turn off left wheel
+                //Turn on right wheel at full power
+                LEFTMOTORDIRECTION1 = 0; 
+                LEFTMOTORDIRECTION2 = 1;         
+                RIGHTMOTORDIRECTION1 = 0;
+                RIGHTMOTORDIRECTION2 = 1;
+                RW = 475; 
+                LW = 100; 
                break;
-           case moveFwd:
-               // Turn on both motors at full power
-                LEFTMOTORDIRECTION1 = 1; 
-                LEFTMOTORDIRECTION2 = 0;         
-                RIGHTMOTORDIRECTION1 = 1;
-                RIGHTMOTORDIRECTION2 = 0;
-                OC4RS = 1023; //RIGHT
-                OC3RS = 1023; //LEFT
+           case moveFwd: 
+                checkStop();
+                //Turn on both motors at full power
+                LEFTMOTORDIRECTION1 = 0; 
+                LEFTMOTORDIRECTION2 = 1;         
+                RIGHTMOTORDIRECTION1 = 0;
+                RIGHTMOTORDIRECTION2 = 1;
+                RW = 475;
+                LW = 475; 
                break;      
        }
 }
@@ -300,15 +297,25 @@ detectEnd()
 turnAround()
 {
     //Make right wheel turn FWD
-    RIGHTMOTORDIRECTION1 = 1;
-    RIGHTMOTORDIRECTION2 = 0;
+    RIGHTMOTORDIRECTION1 = 0;
+    RIGHTMOTORDIRECTION2 = 1;
     //Make left wheel turn BCKWD
-    LEFTMOTORDIRECTION1 = 0; 
-    LEFTMOTORDIRECTION2 = 1; 
+    LEFTMOTORDIRECTION1 = 1; 
+    LEFTMOTORDIRECTION2 = 0; 
             
     OC4RS = 1023; //RIGHT full power
     OC3RS = 1023; //LEFT full power
+    
     //delay for how long it takes for it to turn 180degrees
     delayMs(timeToTurn);
     jason = followLine_detectEnd;
+}
+
+checkStop()
+{
+    if (SWITCH == 0) 
+    {
+        flag = 1;
+        currState = debouncePress;
+    }
 }

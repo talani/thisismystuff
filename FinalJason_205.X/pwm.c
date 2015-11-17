@@ -16,6 +16,7 @@ void initPWM(){
     TRISDbits.TRISD7 = INPUT;
     CNPUDbits.CNPUD7 = 1; //enable internal pull-up resistor
     
+    
     TRISDbits.TRISD11 = 0; //output Forward right ENABLE FOR LEFT WHEEL
     TRISBbits.TRISB5 = 0; //output Forward left ENABLE FOR RIGHT WHEEL
     
