@@ -7,12 +7,11 @@
 #ifndef ADC_H
 #define	ADC_H
 
-#define TRIPOT TRISBbits.TRISB0
-#define INPUT 1
+#define TRIPOT TRISBbits.TRISB0 //potentiometer define
+#define INPUT 1 //input defined as 1
 
-void initADC();
-//void checkInterrupt();
-void startRead();
-int waitToFinish();
+void initADC(); //initialize the ADC
+void startRead(); //read from buffer
+int waitToFinish(); //wait for read to finish
 
 #endif	/* AC_H */

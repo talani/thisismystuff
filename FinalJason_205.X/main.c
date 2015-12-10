@@ -14,6 +14,7 @@
 #include "config.h"
 #include "timer.h"
 #include "pwm.h"
+#include "uart.h"
 
 #define THRESHOLD 500
 //if value < 450 = BLACK
@@ -57,6 +58,8 @@ volatile actionType jason = followLine_detectEnd;
 
 char str[16];
 
+volatile char input = '\0';
+
 int main(void)
 {
     SYSTEMConfigPerformance(40000000);
@@ -65,10 +68,65 @@ int main(void)
     initADC(); //initialize the ADC
     initPWM(); //initialize the PWM
     initTimer3(); //initialize the timer
+    TRISDbits.TRISD0 = 0;
+    LATDbits.LATD0 = 0;
+    initUART(); //initialize UART
     
+    sendByte('M');
     
    while(1)
    {
+        if(U2STAbits.URXDA)
+        {
+            input = U2RXREG; //saves RX reg buffer
+            sendByte(input); //echos pressed key back to prompt
+            sendByte(':'); //sends : to terminal prompt
+        }
+       
+        switch(input) {
+            case 'w': //forward
+                LEFTMOTORDIRECTION1 = 0; 
+                LEFTMOTORDIRECTION2 = 1;         
+                RIGHTMOTORDIRECTION1 = 0;
+                RIGHTMOTORDIRECTION2 = 1;
+                RW = 700;
+                LW = 700; 
+                break;
+            case 'a': //left
+                LEFTMOTORDIRECTION1 = 0; 
+                LEFTMOTORDIRECTION2 = 1;         
+                RIGHTMOTORDIRECTION1 = 0;
+                RIGHTMOTORDIRECTION2 = 1;
+                RW = 700; 
+                LW = 100;
+                break;
+            case 's': //backward
+                LEFTMOTORDIRECTION1 = 1; 
+                LEFTMOTORDIRECTION2 = 0;         
+                RIGHTMOTORDIRECTION1 = 1;
+                RIGHTMOTORDIRECTION2 = 0;
+                RW = 700; 
+                LW = 700;               
+                break;
+            case 'd': //right
+                LEFTMOTORDIRECTION1 = 0; 
+                LEFTMOTORDIRECTION2 = 1;         
+                RIGHTMOTORDIRECTION1 = 0;
+                RIGHTMOTORDIRECTION2 = 1;
+                RW = 100; 
+                LW = 700;                
+                break;
+            case 'p':
+                LEFTMOTORDIRECTION1 = 0; 
+                LEFTMOTORDIRECTION2 = 1;         
+                RIGHTMOTORDIRECTION1 = 0;
+                RIGHTMOTORDIRECTION2 = 1;
+                RW = 0;
+                LW = 0; 
+                break;
+        }
+        
+        
        startRead(0); //starts reading from ADC (POT)
        adcVal0 = waitToFinish0(); //save digital value of pot
        
@@ -104,6 +162,7 @@ int main(void)
                break;      
        }       
    }
+    
     return 0;
 }
 
@@ -201,7 +260,7 @@ followLine()
                LEFTMOTORDIRECTION2 = 1;         
                RIGHTMOTORDIRECTION1 = 0;
                RIGHTMOTORDIRECTION2 = 1;
-               RW = 325;
+               RW = 500;
                LW = 250; 
                break;
            case moveRight:
@@ -213,7 +272,7 @@ followLine()
                 RIGHTMOTORDIRECTION1 = 0;
                 RIGHTMOTORDIRECTION2 = 1;
                 RW = 100; 
-                LW = 475; 
+                LW = 700; 
                break;
            case moveLeft:
                 checkStop();
@@ -223,7 +282,7 @@ followLine()
                 LEFTMOTORDIRECTION2 = 1;         
                 RIGHTMOTORDIRECTION1 = 0;
                 RIGHTMOTORDIRECTION2 = 1;
-                RW = 475; 
+                RW = 700; 
                 LW = 100; 
                break;
            case moveFwd: 
@@ -233,8 +292,8 @@ followLine()
                 LEFTMOTORDIRECTION2 = 1;         
                 RIGHTMOTORDIRECTION1 = 0;
                 RIGHTMOTORDIRECTION2 = 1;
-                RW = 475;
-                LW = 475; 
+                RW = 700;
+                LW = 700; 
                break;      
        }
 }
@@ -288,6 +347,7 @@ detectEnd()
         case state6:
             //we have detected the last 111
             //we are done with the track, must turn around and follow line
+            LATDbits.LATD0 = 1;
             end = state0; //reset
             jason = turnAroundJason;
             break;
@@ -319,3 +379,19 @@ checkStop()
         currState = debouncePress;
     }
 }
+
+//void __ISR(_TIMER_1_VECTOR, ipl3SRS) Timer1Handler()
+//void __attribute__((vector(_UART_2_VECTOR), interrupt(IPL3SRS), nomips16)) UART2_ISR(void)
+//void __ISR(_UART_2_VECTOR, ipl3) IntUart2Handler(void)
+//void __ISR(_UART_2_VECTOR, ipl3SRS) _UART2Handler()
+////void __ISR(_UART2_VECTOR, ipl3) _UART2Handler(void)
+//{
+//    
+//    //sendByte(U2RXREG); 
+//    //sendByte(test);
+//    test = U2RXREG + 1;
+//    //test++;
+//       if (test > 'z')
+//           test = 'A';
+//    IFS1bits.U2RXIF = 0; // Put the flag down
+//}
